@@ -18,7 +18,7 @@ from pyvis.network import Network
 from llm_graphs.models import KnowledgeGraph
 
 
-def get_knowledge_graph(
+def _from_prompt(
     messages: List[ChatCompletionMessageParam],
     model: str = 'gpt-4',
 ) -> KnowledgeGraph:
@@ -52,7 +52,7 @@ def get_knowledge_graph(
 
 
 @lru_cache(maxsize=None)
-def get_book_summary_knowledge_graph(book_title: str, model: str = 'gpt-4') -> KnowledgeGraph:
+def from_book_summary(book_title: str, model: str = 'gpt-4') -> KnowledgeGraph:
     """Return a KnowledgeGraph object for a given book title using the OpenAI API.
 
     The function first generates some text using the OpenAI API, then uses the
@@ -89,10 +89,10 @@ A node should not have self loop and there should not be a loop between two node
 The graph should give to the reader a good summary of the book''',
         },
     ]
-    return get_knowledge_graph(messages=messages, model=model)
+    return _from_prompt(messages=messages, model=model)
 
 
-def draw_kg_with_pyvis(knowledge_graph: KnowledgeGraph) -> Any:  # noqa: D417,ANN401
+def draw_with_pyvis(knowledge_graph: KnowledgeGraph) -> Any:  # noqa: D417,ANN401
     """Draws a knowledge graph using Pyvis library.
 
     Parameters
