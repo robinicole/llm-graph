@@ -4,6 +4,13 @@ Library to plot directed graphs with LLMs
 ## Overview
 This is an LLM library to create directed graphs from LLMs
 
+You can run this as a script using the cli: 
+
+```shell
+python -m llm_graphs.knowledge_graph "The little Pricnce" --model gpt-3.5-turbo
+```
+This will generate a html file with the graph in the same directory. 
+
 ## Usage
 This project is set up using poetry. To install the dependencies, run `poetry install` from the root of the project.
 

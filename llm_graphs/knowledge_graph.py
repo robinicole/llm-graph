@@ -41,7 +41,7 @@ def _from_prompt(
     KnowledgeGraph
         The generated graph representing the book.
     """
-    if model not in ['gpt-3.5-turbo', 'gpt-4']:
+    if model not in ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo']:
         raise ValueError('Model must be either gpt-3.5-turbo or gpt-4')
     client = instructor.from_openai(OpenAI())
     return client.chat.completions.create(
@@ -118,3 +118,16 @@ def draw_with_pyvis(knowledge_graph: KnowledgeGraph) -> Any:  # noqa: D417,ANN40
 
     # Display the network
     return net.show(f'{knowledge_graph.name}.html')
+
+
+if __name__ == '__main__':
+    # receive command line args
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('book_title', type=str, help='The title of the book to summarize.')
+    parser.add_argument('--model', type=str, default='gpt-3.5-turbo', help='The OpenAI API model to use.')
+    args = parser.parse_args()
+    # generate the knowledge graph
+    knowledge_graph = from_book_summary(book_title=args.book_title, model=args.model)
+    draw_with_pyvis(knowledge_graph)
