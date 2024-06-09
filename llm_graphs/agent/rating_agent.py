@@ -3,22 +3,19 @@ Module to iteratively generate and rate knowledge graphs for a given book.
 """
 from __future__ import annotations
 
-from typing import (
-    Any,
-    List,
-    Literal,
-    Optional,
-    TypedDict,
-)
+from typing import Any, List, Literal, Optional, TypedDict
 
 import instructor
 from openai import OpenAI
 
-from llm_graphs.models import (
-    Feedback,
-    KnowledgeGraph,
-)
+from llm_graphs.models import Feedback, KnowledgeGraph
 from llm_graphs.utils import draw_with_pyvis
+from llm_graphs.agent.utils import (
+    generate_system_message,
+    generate_user_message,
+    generate_feedback_message,
+    generate_improvement_message,
+)
 
 GraphDict = TypedDict('GraphDict', {'graph': KnowledgeGraph, 'rating': Optional[Feedback]})
 
@@ -73,35 +70,7 @@ class RatingGraphCreator:
             knowledge_graph = self._client.chat.completions.create(
             model=model,  # type: ignore
             response_model=KnowledgeGraph,
-            messages=[
-                {
-                    'role': 'system',
-                    'content': 'You are an expert in summarizing data into visually appealing knowledge graphs.',
-                },
-                {
-                    'role': 'user',
-                    'content': f'''
-
-    # Goal
-    {self.goal_str}
-    # Graph meaning
-    {self.MEANING_STR}
-    # Graph structure
-    for the edges:
-    - idFrom and idTo are the ids of the nodes from where the link srtarts and where the link is directged
-    - Each node represent a concept in the book
-    - If the graph is too complex to be represented in 2d you are allowed to remove some edge and nodes
-    - If you have a link between two node ids that do not exist you have failed your task
-    - If there is an isolated node you have failed your task
-    - The graph should not have isolated component
-    - A node should not have self loop and there should not be a loop between two nodes
-    - The graph should ideally have 10 nodes and 20 edges but be flexible
-    Take some time and reason step by step before creating the graph object to make a graph that will be easy to display
-    - You should describe your thought process in the reasoning field of the graph
-    - Take a deep breath and work through this step by step and make sure you have the right answer
-    ''',
-                },
-            ],
+            messages=[generate_system_message(), generate_user_message(self.goal_str, self.MEANING_STR)],
         )
             self._graphs_history.append({'graph': knowledge_graph, 'rating': None})
         except Exception as e:
@@ -112,30 +81,7 @@ class RatingGraphCreator:
             feedback = self._client.chat.completions.create(
             model=model,
             response_model=Feedback,
-            messages=[
-                {
-                    'role': 'system',
-                    'content': 'You are a book reader who want to use visual insights to understand stories without being revealed the end of the story',
-                },
-                {
-                    'role': 'user',
-                    'content': f'''
-            Graph json
-            {knowledge_graph.model_dump_json()}
-
-            The json above represent a graph that was generated and is supposed to follow the criteria below
-            <criteria>
-            # Goal
-            {self.goal_str}
-            # Graph meaning
-            {self.MEANING_STR}
-            </criteria>
-            Please rate the graph above from 0 to 10 and give a feedback on how it can be improved
-            You should give extra mark to graph that explain the concepts of the book and help the reader interpret the book as they are reading it
-            You should penalize graphs with loops between two nodes and give extra marks to graph with non-standard structure
-            ''',
-                },
-            ],
+            messages=[generate_system_message(), generate_feedback_message(self.goal_str, self.MEANING_STR, knowledge_graph)],
         )
             return feedback
         except Exception as e:
@@ -159,27 +105,7 @@ class RatingGraphCreator:
             new_knowledge_graph = self._client.chat.completions.create(
             model=model,
             response_model=KnowledgeGraph,
-            messages=[
-                {
-                    'role': 'system',
-                    'content': 'You are an expert in summarizing data into visually appealing knowledge graphs.',
-                },
-                {
-                    'role': 'user',
-                    'content': f'''
-            You made the graph below
-            ```
-            {last_knowledge_graph.model_dump_json()}
-            ```
-            Following those instructions
-            # Goal
-            {self.goal_str}
-            # Graph meaning
-            {self.MEANING_STR}
-            And received the following rating {last_feedback.rating}/ 10 and this feedback {last_feedback.opinion}. Improve the graph
-            ''',
-                },
-            ],
+            messages=[generate_system_message(), generate_improvement_message(self.goal_str, self.MEANING_STR, last_knowledge_graph, last_feedback)],
         )
             self._graphs_history.append({'graph': new_knowledge_graph, 'rating': None})
         except Exception as e:
