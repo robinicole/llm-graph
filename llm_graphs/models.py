@@ -30,3 +30,9 @@ class KnowledgeGraph(BaseModel):
     nodes: List[Node]
     links: List[Link]
     name: str
+    reasoning: str
+
+
+class Feedback(BaseModel):
+    rating: int
+    opinion: str
