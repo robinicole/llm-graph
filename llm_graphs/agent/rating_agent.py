@@ -29,20 +29,20 @@ GPT_4O = 'gpt-4o'
 GPT_3_5_TURBO = 'gpt-3.5-turbo'
 GPT_4 = 'gpt-4'
 
+DEFAULT_MEANING_STR = (
+    '- the resulting graph will be visually appealing and give a good global understanding of the structure of the book it explains.\n'
+    '- The graph will focus on the concepts and relation between the characters and/or the concepts in the book, not tell the story of the book\n'
+    '- Every link description should be of the form close to "<link_description> represent  <reason>" you are allowed not to follow exactly this pattern though\n'
+)
+
+
+def default_goal_str(book_name: str) -> str:
+    """Returns the goal string for the graph creator."""
+    return f'Generate a graph that will help the reader to understand the structure of the book {book_name}'
+
 
 class RatingGraphCreator:
     """Class to iteratively generate and rate knowledge graphs for a given book."""
-
-    MEANING_STR = (
-        '- the resulting graph will be visually appealing and give a good global understanding of the structure of the book it explains.\n'
-        '- The graph will focus on the concepts and relation between the characters and/or the concepts in the book, not tell the story of the book\n'
-        '- Every link description should be of the form close to "<link_description> represent  <reason>" you are allowed not to follow exactly this pattern though\n'
-    )
-
-    @property
-    def goal_str(self) -> str:
-        """Returns the goal string for the graph creator."""
-        return f'Generate a graph that will help the reader to understand the structure of the book {self.book_name}'
 
     def __init__(self, book_name: str) -> None:
         """Initialize a new instance of the `RatingGraphCreator` class.
@@ -64,8 +64,8 @@ class RatingGraphCreator:
         try:
             knowledge_graph = generate_seed_graph(
                 model=model,
-                goal_str=self.goal_str,
-                meaning_str=self.MEANING_STR,
+                goal_str=default_goal_str(self.book_name),
+                meaning_str=DEFAULT_MEANING_STR,
             )
             self._graphs_history.append({'graph': knowledge_graph, 'rating': None})
         except Exception as e:
@@ -76,8 +76,8 @@ class RatingGraphCreator:
         try:
             return rate_graph(
                 model=model,
-                goal_str=self.goal_str,
-                meaning_str=self.MEANING_STR,
+                goal_str=default_goal_str(self.book_name),
+                meaning_str=DEFAULT_MEANING_STR,
                 knowledge_graph=knowledge_graph,
             )
         except Exception as e:
@@ -102,8 +102,8 @@ class RatingGraphCreator:
         try:
             new_knowledge_graph = new_graph_from_feedback(
                 model=model,
-                goal_str=self.goal_str,
-                meaning_str=self.MEANING_STR,
+                goal_str=default_goal_str(self.book_name),
+                meaning_str=DEFAULT_MEANING_STR,
                 last_knowledge_graph=last_knowledge_graph,
                 last_feedback=last_feedback,
             )
