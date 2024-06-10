@@ -8,14 +8,16 @@ from llm_graphs.models import (
 )
 
 
-def generate_system_message() -> ChatCompletionMessageParam:
+def system_graph_creator() -> ChatCompletionMessageParam:
+    """Return the system message for the graph creator."""
     return {
         'role': 'system',
         'content': 'You are an expert in summarizing data into visually appealing knowledge graphs.',
     }
 
 
-def generate_user_message(goal_str: str, meaning_str: str) -> ChatCompletionMessageParam:
+def user_generate_graph(goal_str: str, meaning_str: str) -> ChatCompletionMessageParam:
+    """Return the user message for the graph creator."""
     return {
         'role': 'user',
         'content': f'''
@@ -40,11 +42,12 @@ Take some time and reason step by step before creating the graph object to make 
     }
 
 
-def generate_feedback_message(
+def user_rate_graph(
     goal_str: str,
     meaning_str: str,
     knowledge_graph: KnowledgeGraph,
 ) -> ChatCompletionMessageParam:
+    """Return the message to rate the graph."""
     return {
         'role': 'user',
         'content': f'''
@@ -65,12 +68,13 @@ You should penalize graphs with loops between two nodes and give extra marks to 
     }
 
 
-def generate_improvement_message(
+def user_improve_from_feedback(
     goal_str: str,
     meaning_str: str,
     last_knowledge_graph: KnowledgeGraph,
     last_feedback: Feedback,
 ) -> ChatCompletionMessageParam:
+    """Return the message to improve the graph based in its rating."""
     return {
         'role': 'user',
         'content': f'''
