@@ -6,7 +6,7 @@ import instructor
 from instructor import Instructor
 from openai import OpenAI
 
-from llm_graphs.agent.messages import (
+from llm_graphs.agent.prompts import (
     system_graph_creator,
     user_generate_graph,
     user_improve_from_feedback,

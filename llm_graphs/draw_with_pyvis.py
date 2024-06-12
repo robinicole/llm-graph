@@ -1,8 +1,10 @@
-from llm_graphs.models import KnowledgeGraph
-from pyvis.network import Network
-
+from __future__ import annotations
 
 from typing import Any
+
+from pyvis.network import Network  # mypy: ignore-errors
+
+from llm_graphs.models import KnowledgeGraph
 
 
 def draw_with_pyvis(knowledge_graph: KnowledgeGraph) -> Any:  # noqa: D417,ANN401
