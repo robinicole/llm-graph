@@ -47,12 +47,14 @@ async def ping() -> GenericReturn:
 
 
 @app.post('/book_graph/init')
+@app.post('/v1/book_graph/init')
 def generate_graph_endpoint(book_name: str = Body(), model_name: str = Body('gpt-4o')) -> GenericReturn:
     graph = generate_seed_graph(model=model_name, goal_str=default_goal_str(book_name), meaning_str=DEFAULT_MEANING_STR)
     return GenericReturn(output=graph, success=True)
 
 
 @app.post('/book_graph/rate')
+@app.post('/v1/book_graph/rate')
 def rate_graph_endpoint(
     book_name: str = Body(),
     graph: KnowledgeGraph = Body(),
@@ -71,6 +73,7 @@ def rate_graph_endpoint(
 
 
 @app.post('/book_graph/improve')
+@app.post('/v1/book_graph/improve')
 def improve_graph_endpoint(
     book_name: str = Body(),
     graph: KnowledgeGraph = Body(),
@@ -88,6 +91,7 @@ def improve_graph_endpoint(
 
 
 @app.post('/book_graph/rate_and_improve')
+@app.post('/v1/book_graph/rate_and_improve')
 def rate_and_improve_endpoint(
     book_name: str = Body(),
     graph: KnowledgeGraph = Body(),
