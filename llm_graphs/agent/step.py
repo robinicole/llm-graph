@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import (
+    List,
+    Optional,
+)
 
 import instructor
 from instructor import Instructor
@@ -58,7 +61,7 @@ def new_graph_from_feedback(
     goal_str: str,
     meaning_str: str,
     last_knowledge_graph: KnowledgeGraph,
-    last_feedback: Feedback,
+    last_feedbacks: List[Feedback],
     client: Optional[Instructor] = None,
 ) -> KnowledgeGraph:
     _client = _get_client(client)
@@ -67,6 +70,6 @@ def new_graph_from_feedback(
         response_model=KnowledgeGraph,
         messages=[
             system_graph_creator(),
-            user_improve_from_feedback(goal_str, meaning_str, last_knowledge_graph, last_feedback),
+            user_improve_from_feedback(goal_str, meaning_str, last_knowledge_graph, last_feedbacks),
         ],
     )

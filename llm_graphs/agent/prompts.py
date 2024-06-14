@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import List
+
 from openai.types.chat import ChatCompletionMessageParam  # noqa: TCH002
 
 from llm_graphs.models import (
@@ -72,9 +74,10 @@ def user_improve_from_feedback(
     goal_str: str,
     meaning_str: str,
     last_knowledge_graph: KnowledgeGraph,
-    last_feedback: Feedback,
+    last_feedback: List[Feedback],
 ) -> ChatCompletionMessageParam:
     """Return the message to improve the graph based in its rating."""
+    feedbacks_list = '\n'.join([f'- {f.display()}' for f in last_feedback])
     return {
         'role': 'user',
         'content': f'''
@@ -87,6 +90,8 @@ Following those instructions
 {goal_str}
 # Graph meaning
 {meaning_str}
-And received the following rating {last_feedback.rating}/10 and this feedback {last_feedback.opinion}. Improve the graph
+And received the following ratings:
+{feedbacks_list}
+. Improve the graph
 ''',
     }

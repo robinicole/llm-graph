@@ -1,2 +1,3 @@
 [MESSAGES CONTROL]
 disable=BLE001,B904
+ignore-patterns=tests/**

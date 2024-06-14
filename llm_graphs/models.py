@@ -36,3 +36,7 @@ class KnowledgeGraph(BaseModel):
 class Feedback(BaseModel):
     rating: int
     opinion: str
+
+    def display(self) -> str:
+        """Display the feedback."""
+        return f'Rating: {self.rating}/10 Opinion: {self.opinion}'

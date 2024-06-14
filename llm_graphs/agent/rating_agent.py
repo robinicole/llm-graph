@@ -1,5 +1,8 @@
 """Module to iteratively generate and rate knowledge graphs for a given book."""
 # pylint: disable=BLE001,B904
+# TODO: add logging
+# TODO: the multiple ratings should be done in parallel either by providing an argument to the api of by using some async call
+
 from __future__ import annotations
 
 from typing import (
@@ -23,7 +26,7 @@ from llm_graphs.models import (
     KnowledgeGraph,
 )
 
-GraphDict = TypedDict('GraphDict', {'graph': KnowledgeGraph, 'rating': Optional[Feedback]})
+GraphDict = TypedDict('GraphDict', {'graph': KnowledgeGraph, 'rating': Optional[List[Feedback]]})
 
 GPT_4O = 'gpt-4o'
 GPT_3_5_TURBO = 'gpt-3.5-turbo'
@@ -65,7 +68,7 @@ class RatingGraphCreator:
         except KeyError:
             raise ValueError(f'No graph at index {ix}')
 
-    def get_rating(self, ix: int) -> Optional[Feedback]:
+    def get_rating(self, ix: int) -> Optional[List[Feedback]]:
         """Return the rating at the given index."""
         if not self._graphs_history:
             raise ValueError('You need to generate a first graph with `generate_initial_graph`')
@@ -83,48 +86,59 @@ class RatingGraphCreator:
                 model=model,
                 goal_str=default_goal_str(self.book_name),
                 meaning_str=DEFAULT_MEANING_STR,
+                client=self._client,
             )
             self._graphs_history.append({'graph': knowledge_graph, 'rating': None})
         except Exception as e:
             raise RuntimeError(f'Failed to generate initial graph: {e}')
         return self.get_graph(-1)
 
-    def _rate_graph_from_ix(self, ix: int, model: str = GPT_3_5_TURBO) -> Feedback:
+    def _rate_graph_from_ix(self, ix: int, model: str = GPT_3_5_TURBO, num_ratings: int = 1) -> List[Feedback]:
         """Rate the graph."""
         knowledge_graph = self.get_graph(ix)
-        return rate_graph(
-            model=model,
-            goal_str=default_goal_str(self.book_name),
-            meaning_str=DEFAULT_MEANING_STR,
-            knowledge_graph=knowledge_graph,
-        )
+        return [
+            rate_graph(
+                model=model,
+                goal_str=default_goal_str(self.book_name),
+                meaning_str=DEFAULT_MEANING_STR,
+                knowledge_graph=knowledge_graph,
+                client=self._client,
+            )
+            for _ in range(num_ratings)
+        ]
 
-    def rate_this_graph(self, model: str = GPT_3_5_TURBO) -> None:
+    def rate_this_graph(self, model: str = GPT_3_5_TURBO, num_ratings: int = 1) -> None:
         """Rate the last generated graph."""
-        rate_graph = self._rate_graph_from_ix(-1, model)
+        rate_graph = self._rate_graph_from_ix(-1, model, num_ratings=num_ratings)
         self._graphs_history[-1]['rating'] = rate_graph
 
     def generate_new_graph_from_feedback(self, model: str = GPT_4O) -> KnowledgeGraph:
         """Generate a new graph based on the feedback from the last graph."""
 
         last_knowledge_graph = self.get_graph(-1)
-        last_feedback: Optional[Feedback] = self._graphs_history[-1]['rating']
-        if not last_feedback:
+        last_feedbacks: Optional[List[Feedback]] = self._graphs_history[-1]['rating']
+        if not last_feedbacks:
             raise ValueError('You need to rate the last graph before generating a new one')
         new_knowledge_graph = new_graph_from_feedback(
             model=model,
             goal_str=default_goal_str(self.book_name),
             meaning_str=DEFAULT_MEANING_STR,
             last_knowledge_graph=last_knowledge_graph,
-            last_feedback=last_feedback,
+            last_feedbacks=last_feedbacks,
+            client=self._client,
         )
         self._graphs_history.append({'graph': new_knowledge_graph, 'rating': None})
         return new_knowledge_graph
 
-    def rate_and_generate(self, model_rating: str = GPT_3_5_TURBO, model_generation: str = GPT_4O) -> KnowledgeGraph:
+    def rate_and_generate(
+        self,
+        model_for_rating: str = GPT_3_5_TURBO,
+        model_for_generation: str = GPT_4O,
+        num_ratings: int = 1,
+    ) -> KnowledgeGraph:
         """Rate a graph and generate a better graph based on the rating feedback."""
-        self.rate_this_graph(model_rating)
-        self.generate_new_graph_from_feedback(model_generation)
+        self.rate_this_graph(model_for_rating, num_ratings=num_ratings)
+        self.generate_new_graph_from_feedback(model_for_generation)
         return self.get_graph(-1)
 
     def plot(self, ix: int = -1) -> Any:

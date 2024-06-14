@@ -49,7 +49,8 @@ class TestPrompts(unittest.TestCase):
             reasoning='This is a test graph.',
         )
         last_feedback = Feedback(rating=5, opinion='Needs improvement in structure.')
-        user_improve_from_feedback(goal_str, meaning_str, last_knowledge_graph, last_feedback)
+        actual = user_improve_from_feedback(goal_str, meaning_str, last_knowledge_graph, [last_feedback])
+        assert 'Needs improvement in structure.' in actual['content'], actual['content']  # type: ignore
 
 
 if __name__ == '__main__':
