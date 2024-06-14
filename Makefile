@@ -1,4 +1,4 @@
-run_api:
+fastapi:
 	fastapi dev api
 
 test:
