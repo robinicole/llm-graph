@@ -15,15 +15,15 @@ from typing import (
 import instructor
 from openai import OpenAI
 
-from llm_graphs.agent.step import (
-    generate_seed_graph,
-    new_graph_from_feedback,
-    rate_graph,
-)
-from llm_graphs.draw_with_pyvis import draw_with_pyvis
+from llm_graphs.draw_knowledge_graph import draw_with_pyvis
 from llm_graphs.models import (
     Feedback,
     KnowledgeGraph,
+)
+from llm_graphs.step import (
+    generate_seed_graph,
+    new_graph_from_feedback,
+    rate_graph,
 )
 
 GraphDict = TypedDict('GraphDict', {'graph': KnowledgeGraph, 'rating': Optional[List[Feedback]]})

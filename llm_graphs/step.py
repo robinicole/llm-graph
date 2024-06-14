@@ -9,15 +9,15 @@ import instructor
 from instructor import Instructor
 from openai import OpenAI
 
-from llm_graphs.agent.prompts import (
+from llm_graphs.models import (
+    Feedback,
+    KnowledgeGraph,
+)
+from llm_graphs.prompts import (
     system_graph_creator,
     user_generate_graph,
     user_improve_from_feedback,
     user_rate_graph,
-)
-from llm_graphs.models import (
-    Feedback,
-    KnowledgeGraph,
 )
 
 

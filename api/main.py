@@ -14,18 +14,18 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
-from llm_graphs.agent.rating_agent import (
+from llm_graphs.agents.rating_agent import (
     DEFAULT_MEANING_STR,
     default_goal_str,
-)
-from llm_graphs.agent.step import (
-    generate_seed_graph,
-    new_graph_from_feedback,
-    rate_graph,
 )
 from llm_graphs.models import (
     Feedback,
     KnowledgeGraph,
+)
+from llm_graphs.step import (
+    generate_seed_graph,
+    new_graph_from_feedback,
+    rate_graph,
 )
 
 app = FastAPI()
@@ -54,7 +54,7 @@ def generate_graph_endpoint(book_name: str = Body(), model_name: str = Body('gpt
 
 
 @app.post('/book_graph/rate')
-@app.post('/v1/book_graph/rate')
+@app.post('/book_graph/v1/rate')
 def rate_graph_endpoint(
     book_name: str = Body(),
     graph: KnowledgeGraph = Body(),
@@ -73,7 +73,7 @@ def rate_graph_endpoint(
 
 
 @app.post('/book_graph/improve')
-@app.post('/v1/book_graph/improve')
+@app.post('/book_graph/v1/improve')
 def improve_graph_endpoint(
     book_name: str = Body(),
     graph: KnowledgeGraph = Body(),
@@ -91,7 +91,7 @@ def improve_graph_endpoint(
 
 
 @app.post('/book_graph/rate_and_improve')
-@app.post('/v1/book_graph/rate_and_improve')
+@app.post('/book_graph/v1/rate_and_improve')
 def rate_and_improve_endpoint(
     book_name: str = Body(),
     graph: KnowledgeGraph = Body(),

@@ -10,7 +10,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam  # noqa: TCH002
 
 # Plotting utils
-from llm_graphs.draw_with_pyvis import draw_with_pyvis
+from llm_graphs.draw_knowledge_graph import draw_with_pyvis
 from llm_graphs.models import KnowledgeGraph
 
 

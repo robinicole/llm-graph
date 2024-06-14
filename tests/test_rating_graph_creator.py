@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import unittest
 
-from llm_graphs.agent.prompts import (
+from llm_graphs.models import (
+    Feedback,
+    KnowledgeGraph,
+)
+from llm_graphs.prompts import (
     system_graph_creator,
     user_generate_graph,
     user_improve_from_feedback,
     user_rate_graph,
-)
-from llm_graphs.models import (
-    Feedback,
-    KnowledgeGraph,
 )
 
 

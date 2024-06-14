@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock
 
-from llm_graphs.agent.rating_agent import RatingGraphCreator
+from llm_graphs.agents.rating_agent import RatingGraphCreator
 from llm_graphs.models import (
     Feedback,
     KnowledgeGraph,
