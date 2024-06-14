@@ -9,12 +9,18 @@ from typing import (
 
 from fastapi import (
     Body,
+    Depends,
     FastAPI,
     HTTPException,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from api.db import (
+    SessionLocal,
+    User,
+    get_db,
+)
 from llm_graphs.agents.rating_agent import (
     DEFAULT_MEANING_STR,
     default_goal_str,
@@ -124,3 +130,12 @@ def rate_and_improve_endpoint(
         last_feedbacks=[feedback],
     )
     return GenericReturn(output={'new_graph': new_graph, 'feedbacks': [feedback]}, success=True)
+
+
+@app.get('/users')
+@app.get('/v1/users')
+def create_user(db: SessionLocal = Depends(get_db)) -> GenericReturn:
+    users: List[User] = db.query(User).all()
+    for user in users:
+        print(user.username)
+    return GenericReturn(output='User created', success=True)

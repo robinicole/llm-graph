@@ -1,8 +1,8 @@
 fastapi:
-	fastapi dev api
+	dotenv -f .env run -- poetry run fastapi dev api
 
 test:
-	python -m unittest discover tests/
+	poetry run python -m unittest discover tests/
 
 smoke:
 	python smoketest.py
