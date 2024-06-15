@@ -5,4 +5,4 @@ test:
 	poetry run python -m unittest discover tests/
 
 smoke:
-	python smoketest.py
+	poetry run python smoketest.py

@@ -16,7 +16,7 @@ class Node(BaseModel):
 
 class Link(BaseModel):
     """Model for a link between two nodes."""
-
+    
     link_id: int
     name: str
     node_id_from: int

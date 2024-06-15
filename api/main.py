@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import (
-    Any,
     List,
 )
 
@@ -14,13 +13,13 @@ from fastapi import (
     HTTPException,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
 from api.db import (
     SessionLocal,
     User,
     get_db,
 )
+from api.models import FeedbackReturn, GraphAndFeedback, GraphAndFeedbackReturn, GraphReturn, StringReturn
 from llm_graphs.agents.rating_agent import (
     DEFAULT_MEANING_STR,
     default_goal_str,
@@ -47,26 +46,21 @@ app.add_middleware(
 )
 
 
-class GenericReturn(BaseModel):
-    output: Any
-    success: bool
-
-
 @app.get('/')
-async def root() -> GenericReturn:
-    return GenericReturn(output='Hello World', success=True)
+async def root() -> StringReturn:
+    return StringReturn(output='Hello World', success=True)
 
 
 @app.get('/ping')
-async def ping() -> GenericReturn:
-    return GenericReturn(output='pong', success=True)
+async def ping() -> StringReturn:
+    return StringReturn(output='pong', success=True)
 
 
 @app.post('/book_graph/init')
 @app.post('/v1/book_graph/init')
-def generate_graph_endpoint(book_name: str = Body(), model_name: str = Body('gpt-4o')) -> GenericReturn:
+def generate_graph_endpoint(book_name: str = Body(), model_name: str = Body('gpt-4o')) -> GraphReturn:
     graph = generate_seed_graph(model=model_name, goal_str=default_goal_str(book_name), meaning_str=DEFAULT_MEANING_STR)
-    return GenericReturn(output=graph, success=True)
+    return GraphReturn(output=graph, success=True)
 
 
 @app.post('/book_graph/rate')
@@ -76,7 +70,7 @@ def rate_graph_endpoint(
     graph: KnowledgeGraph = Body(),
     model_name: str = Body('gpt-4o'),
     num_ratings: int = Body(1),
-) -> GenericReturn:
+) -> FeedbackReturn:
     if num_ratings != 1:
         raise HTTPException(status_code=501, detail='Only one rating is supported at the moment')
     rating = rate_graph(
@@ -85,7 +79,7 @@ def rate_graph_endpoint(
         meaning_str=DEFAULT_MEANING_STR,
         knowledge_graph=graph,
     )
-    return GenericReturn(output=[rating], success=True)
+    return FeedbackReturn(output=[rating], success=True)
 
 
 @app.post('/book_graph/improve')
@@ -95,7 +89,7 @@ def improve_graph_endpoint(
     graph: KnowledgeGraph = Body(),
     feedbacks: List[Feedback] = Body(),
     model_name: str = Body('gpt-4o'),
-) -> GenericReturn:
+) -> GraphReturn:
     new_graph = new_graph_from_feedback(
         model=model_name,
         goal_str=default_goal_str(book_name),
@@ -103,7 +97,7 @@ def improve_graph_endpoint(
         last_knowledge_graph=graph,
         last_feedbacks=feedbacks,
     )
-    return GenericReturn(output=new_graph, success=True)
+    return GraphReturn(output=new_graph, success=True)
 
 
 @app.post('/book_graph/rate_and_improve')
@@ -113,7 +107,7 @@ def rate_and_improve_endpoint(
     graph: KnowledgeGraph = Body(),
     model_name: str = Body('gpt-4o'),
     num_ratings: int = Body(1),
-) -> GenericReturn:
+) -> GraphAndFeedbackReturn:
     if num_ratings != 1:
         raise HTTPException(status_code=501, detail='Only one rating is supported at the moment')
     feedback = rate_graph(
@@ -129,13 +123,16 @@ def rate_and_improve_endpoint(
         last_knowledge_graph=graph,
         last_feedbacks=[feedback],
     )
-    return GenericReturn(output={'new_graph': new_graph, 'feedbacks': [feedback]}, success=True)
+    return GraphAndFeedbackReturn(
+        output=GraphAndFeedback(graph=new_graph, feedbacks=[feedback]),
+        success=True
+        )
 
 
 @app.get('/users')
 @app.get('/v1/users')
-def create_user(db: SessionLocal = Depends(get_db)) -> GenericReturn:
+def create_user(db: SessionLocal = Depends(get_db)) -> StringReturn:
     users: List[User] = db.query(User).all()
     for user in users:
         print(user.username)
-    return GenericReturn(output='User created', success=True)
+    return StringReturn(output='User created', success=True)
